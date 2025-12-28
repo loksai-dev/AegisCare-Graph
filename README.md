@@ -365,11 +365,3 @@ Always consult with qualified healthcare professionals for medical decisions.
 
 This project is provided as-is for educational and demonstration purposes.
 
-## 👥 Author
-
-Developed as part of the AegisCare Graph project for explainable clinical decision intelligence.
-
----
-
-**For questions or issues, please check the troubleshooting section or review the API documentation.**
-
