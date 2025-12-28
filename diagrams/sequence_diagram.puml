@@ -1,0 +1,34 @@
+@startuml Drug_Interaction_Check_Sequence
+
+actor "Doctor" as User
+participant "Streamlit UI" as UI
+participant "FastAPI Backend" as API
+participant "DrugInteractionService" as Service
+participant "Neo4j Database" as DB
+
+User -> UI: Select Patient
+UI -> API: GET /api/v1/patients/{id}/drug-interactions
+API -> Service: check_patient_drug_interactions(patient_id)
+Service -> DB: Execute Cypher Query
+DB --> Service: Return Interaction Results
+Service -> Service: Format Results with Risk Levels
+Service --> API: List[DrugInteractionResponse]
+API --> UI: JSON Response
+UI -> UI: Display Risk Alerts (Red/Yellow/Green)
+UI --> User: Show Drug Interaction Warnings
+
+User -> UI: Request AI Explanation
+UI -> API: POST /api/v1/explanations
+API -> Service: generate_explanation(request)
+Service -> DB: Fetch Patient Context
+DB --> Service: Patient Clinical Data
+Service -> Service: Build Gemini Prompt
+Service -> "Gemini AI": Generate Explanation
+"Gemini AI" --> Service: AI Explanation Text
+Service -> Service: Parse & Structure Response
+Service --> API: AIExplanationResponse
+API --> UI: JSON Response
+UI --> User: Display AI Explanation
+
+@enduml
+

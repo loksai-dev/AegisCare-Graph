@@ -1,0 +1,76 @@
+@startuml Neo4j_Data_Model
+
+skinparam linetype ortho
+
+entity Patient {
+    * id: string
+    --
+    * name: string
+    * age: int
+    gender: string
+    medical_record_number: string
+}
+
+entity Symptom {
+    * id: string
+    --
+    * name: string
+    severity: string
+    onset_date: string
+}
+
+entity Disease {
+    * id: string
+    --
+    * name: string
+    icd10_code: string
+    diagnosis_date: string
+}
+
+entity Drug {
+    * id: string
+    --
+    * name: string
+    rxnorm_code: string
+    dosage: string
+    frequency: string
+}
+
+entity LabTest {
+    * id: string
+    --
+    * name: string
+    value: string
+    unit: string
+    reference_range: string
+    test_date: string
+}
+
+entity TreatmentProtocol {
+    * id: string
+    --
+    * name: string
+    description: string
+    guidelines: string
+}
+
+Patient ||--o{ "HAS_SYMPTOM" : has
+Patient ||--o{ "HAS_DISEASE" : has
+Patient ||--o{ "TAKES_DRUG" : takes
+Patient ||--o{ "HAS_LAB_RESULT" : has
+
+Disease ||--o{ "TREATED_BY" : treated_by
+Disease ||--o{ "FOLLOW_PROTOCOL" : follows
+
+Drug ||--o{ "INTERACTS_WITH" : interacts
+Drug ||--o{ "INTERACTS_WITH" : interacts_with
+
+note right of Drug::INTERACTS_WITH
+    Relationship Properties:
+    - severity: string
+    - risk_level: string
+    - description: string
+end note
+
+@enduml
+

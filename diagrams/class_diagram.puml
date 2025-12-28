@@ -1,0 +1,130 @@
+@startuml AegisCare_Graph_Class_Diagram
+
+!define RECTANGLE class
+
+package "Backend" {
+    RECTANGLE Settings {
+        - neo4j_uri: str
+        - neo4j_username: str
+        - neo4j_password: str
+        - gemini_api_key: str
+        + validate_settings(): bool
+    }
+
+    RECTANGLE Neo4jDatabase {
+        - driver: Driver
+        + get_session(): Session
+        + execute_query(query: str): List[Dict]
+        + execute_write(query: str): ResultSummary
+        + close(): void
+    }
+
+    RECTANGLE PatientService {
+        + create_patient(data: PatientCreate): PatientResponse
+        + get_patient(id: str): PatientResponse
+        + get_all_patients(): List[PatientResponse]
+        + get_patient_graph(id: str): PatientGraphResponse
+        + link_patient_to_symptom(...): bool
+        + link_patient_to_disease(...): bool
+        + link_patient_to_drug(...): bool
+    }
+
+    RECTANGLE DrugInteractionService {
+        + check_patient_drug_interactions(patient_id: str): List[DrugInteractionResponse]
+        + check_drug_interaction(drug1_id: str, drug2_id: str): DrugInteractionResponse
+        + get_safe_alternatives(patient_id: str, drug_id: str): List[Dict]
+        - _get_recommendation(risk_level: RiskLevel): str
+    }
+
+    RECTANGLE SimilarPatientService {
+        + find_similar_patients(patient_id: str, limit: int): List[SimilarPatientResponse]
+        + find_patients_by_disease(disease_id: str): List[Dict]
+        + find_patients_by_symptom(symptom_id: str): List[Dict]
+    }
+
+    RECTANGLE AIExplanationService {
+        + generate_explanation(request: AIExplanationRequest): AIExplanationResponse
+        - _get_patient_context(patient_id: str): Dict
+        - _build_prompt(request: AIExplanationRequest, context: Dict): str
+        - _parse_explanation(text: str, ...): AIExplanationResponse
+        - _get_fallback_explanation(...): AIExplanationResponse
+    }
+}
+
+package "Models" {
+    RECTANGLE PatientCreate {
+        + name: str
+        + age: int
+        + gender: Optional[str]
+    }
+
+    RECTANGLE PatientResponse {
+        + id: str
+        + name: str
+        + age: int
+    }
+
+    RECTANGLE DrugInteractionResponse {
+        + drug1: str
+        + drug2: str
+        + risk_level: RiskLevel
+        + severity: str
+        + description: str
+        + recommendation: str
+    }
+
+    RECTANGLE SimilarPatientResponse {
+        + patient_id: str
+        + patient_name: str
+        + similarity_score: float
+        + common_symptoms: List[str]
+    }
+
+    RECTANGLE AIExplanationResponse {
+        + explanation: str
+        + reasoning: str
+        + evidence: List[str]
+        + recommendations: List[str]
+    }
+
+    enum RiskLevel {
+        LOW
+        MODERATE
+        HIGH
+        CONTRAINDICATED
+    }
+}
+
+package "Frontend" {
+    RECTANGLE StreamlitApp {
+        + main(): void
+        + show_patient_dashboard(...): void
+        + show_drug_interactions(...): void
+        + show_similar_patients(...): void
+        + show_ai_explanations(...): void
+        + show_patient_graph(...): void
+    }
+}
+
+Neo4jDatabase ..> Settings : uses
+PatientService ..> Neo4jDatabase : uses
+DrugInteractionService ..> Neo4jDatabase : uses
+SimilarPatientService ..> Neo4jDatabase : uses
+AIExplanationService ..> Neo4jDatabase : uses
+AIExplanationService ..> Settings : uses
+
+PatientService ..> PatientCreate : uses
+PatientService ..> PatientResponse : returns
+DrugInteractionService ..> DrugInteractionResponse : returns
+DrugInteractionService ..> RiskLevel : uses
+SimilarPatientService ..> SimilarPatientResponse : returns
+AIExplanationService ..> AIExplanationRequest : uses
+AIExplanationService ..> AIExplanationResponse : returns
+
+StreamlitApp ..> PatientService : calls
+StreamlitApp ..> DrugInteractionService : calls
+StreamlitApp ..> SimilarPatientService : calls
+StreamlitApp ..> AIExplanationService : calls
+
+@enduml
+

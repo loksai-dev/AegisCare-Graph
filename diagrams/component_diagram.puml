@@ -1,0 +1,51 @@
+@startuml AegisCare_Graph_Component_Diagram
+
+package "AegisCare Graph System" {
+    [Streamlit Frontend] as Frontend
+    [FastAPI Backend] as Backend
+    [Neo4j Aura Database] as Neo4j
+    [Google Gemini AI] as Gemini
+}
+
+component [Patient Service] as PatientSvc
+component [Drug Interaction Service] as DrugSvc
+component [Similar Patient Service] as SimilarSvc
+component [AI Explanation Service] as AISvc
+component [Neo4j Driver] as Driver
+component [Config Manager] as Config
+
+Frontend --> Backend : HTTP/REST API
+Backend --> PatientSvc
+Backend --> DrugSvc
+Backend --> SimilarSvc
+Backend --> AISvc
+
+PatientSvc --> Driver
+DrugSvc --> Driver
+SimilarSvc --> Driver
+AISvc --> Driver
+AISvc --> Gemini
+
+Driver --> Neo4j : Neo4j Protocol
+Config --> Neo4j : Connection Config
+Config --> Gemini : API Key
+
+database "Neo4j Graph Database" {
+    node Patient
+    node Symptom
+    node Disease
+    node Drug
+    node LabTest
+    node TreatmentProtocol
+    
+    relationship "HAS_SYMPTOM"
+    relationship "HAS_DISEASE"
+    relationship "TAKES_DRUG"
+    relationship "INTERACTS_WITH"
+    relationship "TREATED_BY"
+    relationship "FOLLOW_PROTOCOL"
+    relationship "HAS_LAB_RESULT"
+}
+
+@enduml
+
